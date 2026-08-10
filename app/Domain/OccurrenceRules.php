@@ -11,7 +11,15 @@ final class OccurrenceRules
     {
         [$hour, $minute] = explode(':', $task->deadline_time);
 
-        return $date->setTimezone($task->challenge->timezone)->setTime((int) $hour, (int) $minute, 0);
+        return CarbonImmutable::create(
+            $date->year,
+            $date->month,
+            $date->day,
+            (int) $hour,
+            (int) $minute,
+            0,
+            $task->challenge->timezone,
+        );
     }
 
     public static function stateFor(
@@ -24,7 +32,15 @@ final class OccurrenceRules
             return OccurrenceState::Completed;
         }
 
-        $startOfDay = $date->setTimezone($task->challenge->timezone)->startOfDay();
+        $startOfDay = CarbonImmutable::create(
+            $date->year,
+            $date->month,
+            $date->day,
+            0,
+            0,
+            0,
+            $task->challenge->timezone
+        );
         $deadline = self::deadlineFor($task, $date);
 
         if ($now < $startOfDay) {

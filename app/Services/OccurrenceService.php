@@ -28,7 +28,7 @@ final class OccurrenceService
         ->get()
         ->keyBy('task_id');
 
-        return $challenge->task
+        return $challenge->tasks
         ->filter(fn (Task $task) => $task->recurrence()->occursOn($date))
         ->map(function (Task $task) use ($date, $now, $completions) {
             $completion = $completions->get($task->id);
