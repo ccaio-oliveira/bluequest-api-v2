@@ -31,4 +31,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Challenge::class, 'creator_user_id');
     }
+
+    public function socialAccounts(): HasMany
+    {
+        return $this->hasMany(SocialAccount::class);
+    }
 }
