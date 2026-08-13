@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ChallengeController;
 use App\Http\Controllers\Api\CompletionController;
 use App\Http\Controllers\Api\SocialAuthController;
 use App\Http\Controllers\Api\TodayController;
@@ -17,4 +18,5 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/today', [TodayController::class, 'index']);
     Route::post('/completions', [CompletionController::class, 'store']);
+    Route::get('/challenges', [ChallengeController::class, 'index']);
 });
