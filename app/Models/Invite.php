@@ -21,4 +21,9 @@ class Invite extends Model
     {
         return $this->belongsTo(Challenge::class);
     }
+
+    public function usedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'used_by_user_id');
+    }
 }
