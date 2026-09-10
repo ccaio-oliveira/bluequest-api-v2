@@ -18,5 +18,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/today', [TodayController::class, 'index']);
     Route::post('/completions', [CompletionController::class, 'store']);
+
     Route::get('/challenges', [ChallengeController::class, 'index']);
+    Route::post('/challenges', [ChallengeController::class, 'store']);
 });
