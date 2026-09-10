@@ -62,4 +62,43 @@ final class OccurrenceService
 
         return $occurrences;
     }
+
+    /** @return Occurrence[] */
+    public function forParticipantInRange(
+        Participant $participant,
+        CarbonImmutable $from,
+        CarbonImmutable $to,
+        CarbonImmutable $now,
+    ): array {
+        $tasks = $participant->challenge->tasks;
+
+        $completions = $participant->completions()
+        ->whereBetween('occurrence_date', [$from->toDateString(), $to->toDateString()])
+        ->get()
+        ->keyBy(fn ($completion) => $completion->task_id . '|' . $completion->occurrence_date->toDateString());
+
+        $occurrences = [];
+        $date = $from;
+
+        while ($date <= $to) {
+            foreach ($tasks as $task) {
+                if (!$task->recurrence()->occursOn($date)) {
+                    continue;
+                }
+
+                $completion = $completions->get($task->id . '|' . $date->toDateString());
+
+                $occurrences[] = new Occurrence(
+                    task: $task,
+                    date: $date,
+                    state: OccurrenceRules::stateFor($task, $date, $completion !== null, $now),
+                    completion: $completion,
+                );
+            }
+
+            $date = $date->addDay();
+        }
+
+        return $occurrences;
+    }
 }

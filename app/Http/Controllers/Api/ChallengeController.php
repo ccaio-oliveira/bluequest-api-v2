@@ -9,6 +9,7 @@ use App\Http\Requests\StoreChallengeRequest;
 use App\Models\Challenge;
 use App\Models\Participant;
 use App\Models\User;
+use App\Services\ParticipantStatsService;
 use App\Services\RankingService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
@@ -29,6 +30,66 @@ class ChallengeController extends Controller
 
         return response()->json([
             'challenges' => $challenges->map(fn (Challenge $challenge) => $this->present($challenge, $ranking, $user, $now)),
+        ]);
+    }
+
+    public function show(
+        Request $request,
+        Challenge $challenge,
+        RankingService $ranking,
+        ParticipantStatsService $stats,
+    ) {
+        $user = $request->user();
+        $now = CarbonImmutable::now();
+
+        $challenge->load('participants.user', 'tasks');
+
+        $myParticipant = $challenge->participants->firstWhere('user_id', $user->id);
+        abort_if($myParticipant === null, 403);
+
+        $ranked = $ranking->rank($challenge);
+        $mine = $ranked->firstWhere('user_id', $user->id);
+
+        return response()->json([
+            'id' => $challenge->id,
+            'name' => $challenge->name,
+            'description' => $challenge->description,
+            'start_date' => $challenge->start_date->toDateString(),
+            'end_date' => $challenge->end_date->toDateString(),
+            'state' => ChallengeRules::state($challenge, $now)->value,
+            'current_day' => ChallengeRules::currentDay($challenge, $now),
+            'total_days' => ChallengeRules::totalDays($challenge),
+            'creator_user_id' => $challenge->creator_user_id,
+            'participants_count' => $challenge->participants->count(),
+
+            'ranking' => $ranked->map(fn ($participant) => [
+                'user_id' => $participant->user_id,
+                'name' => $participant->user->name,
+                'points' => $participant->points_total,
+                'position' => $participant->rank_position,
+                'joined_at' => $participant->joined_at->toDateString(),
+                'is_creator' => $participant->user_id === $challenge->creator_user_id,
+                'is_you' => $participant->user_id === $user->id,
+            ])->values(),
+
+            'me' => array_merge(
+                $stats->for($myParticipant, $now),
+                [
+                    'points' => $mine?->points_total ?? 0,
+                    'position' => $mine?->rank_position,
+                ]
+            ),
+
+            'tasks' => $challenge->tasks->map(fn ($task) => [
+                'id' => $task->id,
+                'name' => $task->name,
+                'description' => $task->description,
+                'points' => $task->points,
+                'deadline_time' => substr($task->deadline_time, 0, 5),
+                'photo_requirement' => $task->photo_requirement,
+                'recurrence_type' => $task->recurrence_type->value,
+                'recurrence_weekdays' => $task->recurrence_weekdays,
+            ])->values(),
         ]);
     }
 
