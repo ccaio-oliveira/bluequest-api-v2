@@ -26,4 +26,9 @@ class Invite extends Model
     {
         return $this->belongsTo(User::class, 'used_by_user_id');
     }
+
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by_user_id');
+    }
 }

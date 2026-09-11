@@ -6,6 +6,7 @@ use App\Domain\ChallengeRules;
 use App\Domain\ChallengeState;
 use App\Domain\InviteRules;
 use App\Domain\InviteState;
+use App\Domain\RecurrenceType;
 use App\Http\Controllers\Controller;
 use App\Models\Challenge;
 use App\Models\Invite;
@@ -41,7 +42,7 @@ class InviteController extends Controller
 
     public function preview(Request $request, string $code)
     {
-        $invite = Invite::with('challenge.participants.user')->where('code', $code)->first();
+        $invite = Invite::with(['challenge.participants.user', 'challenge.tasks', 'createdBy'])->where('code', $code)->first();
         $challenge = $invite?->challenge;
 
         $isParticipant = $challenge != null && Participant::query()
@@ -55,7 +56,7 @@ class InviteController extends Controller
 
         return response()->json([
             'state' => $state->value,
-            'challenge' => $state === InviteState::Invalid ? null : $this->challengePayload($challenge, $challengeState)
+            'challenge' => $state === InviteState::Invalid ? null : $this->challengePayload($challenge, $challengeState, $invite)
         ]);
     }
 
@@ -131,7 +132,7 @@ class InviteController extends Controller
         ];
     }
 
-    private function challengePayload(Challenge $challenge, ?ChallengeState $state): array
+    private function challengePayload(Challenge $challenge, ?ChallengeState $state, Invite $invite): array
     {
         return [
             'id' => $challenge->id,
@@ -145,6 +146,26 @@ class InviteController extends Controller
             'participants' => $challenge->participants->take(4)
             ->map(fn ($participant) => ['name' => $participant->user->name])
             ->values(),
+            'invited_by' => $invite->createdBy?->name,
+            'tasks_count' => $challenge->tasks->count(),
+            'max_points_per_day' => $this->maxPointsPerDay($challenge),
         ];
+    }
+
+    private function maxPointsPerDay(Challenge $challenge): int
+    {
+        $perWeekday = [];
+
+        foreach (range(1, 7) as $weekday) {
+            $perWeekday[$weekday] = $challenge->tasks
+            ->filter(fn ($task) => match ($task->recurrence_type) {
+                RecurrenceType::Daily => true,
+                RecurrenceType::Weekdays => in_array($weekday, $task->recurrence_weekdays ?? [], true),
+                RecurrenceType::Once => false,
+            })
+            ->sum('points');
+        }
+
+        return (int) max($perWeekday);
     }
 }
