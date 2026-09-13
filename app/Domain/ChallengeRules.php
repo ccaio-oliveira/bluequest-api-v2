@@ -41,6 +41,35 @@ final class ChallengeRules
         return max(1, min($elapsed + 1, self::totalDays($challenge)));
     }
 
+    public static function validateUpdate(
+        Challenge $challenge,
+        string $newStart,
+        string $newEnd,
+        CarbonImmutable $now
+    ): void
+    {
+        $state = self::state($challenge, $now);
+
+        if ($state === ChallengeState::Closed) {
+            throw new ChallengeException('challenge_closed');
+        }
+
+        $today = $now->setTimezone($challenge->timezone)->toDateString();
+        $startChanged = $newStart !== $challenge->start_date->toDateString();
+
+        if ($startChanged && $state !== ChallengeState::Future) {
+            throw new ChallengeException('start_locked');
+        }
+
+        if ($startChanged && $newStart < $today) {
+            throw new ChallengeException('start_in_past');
+        }
+
+        if ($newEnd < $today) {
+            throw new ChallengeException('end_in_past');
+        }
+    }
+
     private static function midnight(CarbonImmutable $date, string $timezone): CarbonImmutable
     {
         return CarbonImmutable::create(

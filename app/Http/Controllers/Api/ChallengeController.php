@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Domain\ChallengeException;
 use App\Domain\ChallengeRules;
 use App\Domain\RecurrenceType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreChallengeRequest;
+use App\Http\Requests\UpdateChallengeRequest;
 use App\Models\Challenge;
 use App\Models\Participant;
 use App\Models\User;
@@ -135,6 +137,26 @@ class ChallengeController extends Controller
         $challenge->load('participants.user');
 
         return response()->json($this->present($challenge, $ranking, $user, CarbonImmutable::now()), 201);
+    }
+
+    public function update(UpdateChallengeRequest $request, Challenge $challenge)
+    {
+        $data = $request->validated();
+
+        try {
+            ChallengeRules::validateUpdate(
+                challenge: $challenge,
+                newStart: $data['start_date'],
+                newEnd: $data['end_date'],
+                now: CarbonImmutable::now(),
+            );
+        } catch (ChallengeException $e) {
+            return response()->json(['error' => $e->reason], 422);
+        }
+
+        $challenge->update($data);
+
+        return response()->noContent();
     }
 
     private function present(Challenge $challenge, RankingService $ranking, User $user, CarbonImmutable $now): array

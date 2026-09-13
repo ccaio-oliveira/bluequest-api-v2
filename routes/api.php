@@ -23,6 +23,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/challenges', [ChallengeController::class, 'index']);
     Route::post('/challenges', [ChallengeController::class, 'store']);
     Route::get('/challenges/{challenge}', [ChallengeController::class, 'show']);
+    Route::put('/challenges/{challenge}', [ChallengeController::class, 'update']);
     Route::get('/challenges/{challenge}/invite', [InviteController::class, 'show']);
     Route::post('/challenges/{challenge}/invite/rotate', [InviteController::class, 'rotate']);
     Route::get('/invites/{code}', [InviteController::class, 'preview']);
