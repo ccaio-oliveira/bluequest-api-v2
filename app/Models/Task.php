@@ -10,14 +10,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Task extends Model
 {
-    protected $fillable = ['challenge_id', 'name', 'description', 'points', 'recurrence_type', 'recurrence_date', 'recurrence_weekdays', 'deadline_time', 'photo_requirement'];
+    protected $fillable = ['challenge_id', 'name', 'description', 'points', 'recurrence_type', 'recurrence_date', 'recurrence_weekdays', 'deadline_time', 'photo_requirement', 'active_from', 'active_until'];
 
     protected function casts(): array
     {
         return [
             'recurrence_type' => RecurrenceType::class,
             'recurrence_date' => 'immutable_date',
-            'recurrence_weekdays' => 'array'
+            'recurrence_weekdays' => 'array',
+            'active_from' => 'immutable_date',
+            'active_until' => 'immutable_date'
         ];
     }
 

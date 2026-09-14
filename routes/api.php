@@ -5,8 +5,8 @@ use App\Http\Controllers\Api\ChallengeController;
 use App\Http\Controllers\Api\CompletionController;
 use App\Http\Controllers\Api\InviteController;
 use App\Http\Controllers\Api\SocialAuthController;
+use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\TodayController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -24,6 +24,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/challenges', [ChallengeController::class, 'store']);
     Route::get('/challenges/{challenge}', [ChallengeController::class, 'show']);
     Route::put('/challenges/{challenge}', [ChallengeController::class, 'update']);
+    Route::post('/challenges/{challenge}/tasks', [TaskController::class, 'store']);
+    Route::put('/tasks/{task}', [TaskController::class, 'update']);
+    Route::delete('/tasks/{task}', [TaskController::class, 'destroy']);
     Route::get('/challenges/{challenge}/invite', [InviteController::class, 'show']);
     Route::post('/challenges/{challenge}/invite/rotate', [InviteController::class, 'rotate']);
     Route::get('/invites/{code}', [InviteController::class, 'preview']);

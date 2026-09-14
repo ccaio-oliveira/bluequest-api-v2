@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Domain\Occurrence;
 use App\Domain\OccurrenceRules;
+use App\Domain\TaskRules;
 use App\Models\Participant;
 use App\Models\Task;
 use App\Models\User;
@@ -29,7 +30,7 @@ final class OccurrenceService
         ->keyBy('task_id');
 
         return $challenge->tasks
-        ->filter(fn (Task $task) => $task->recurrence()->occursOn($date))
+        ->filter(fn (Task $task) => TaskRules::isActiveOn($task, $date) && $task->recurrence()->occursOn($date))
         ->map(function (Task $task) use ($date, $now, $completions) {
             $completion = $completions->get($task->id);
 
@@ -82,7 +83,7 @@ final class OccurrenceService
 
         while ($date <= $to) {
             foreach ($tasks as $task) {
-                if (!$task->recurrence()->occursOn($date)) {
+                if (!TaskRules::isActiveOn($task, $date) || !$task->recurrence()->occursOn($date)) {
                     continue;
                 }
 

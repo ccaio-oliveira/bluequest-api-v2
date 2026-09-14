@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Domain\ChallengeException;
 use App\Domain\ChallengeRules;
 use App\Domain\RecurrenceType;
+use App\Domain\TaskRules;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreChallengeRequest;
 use App\Http\Requests\UpdateChallengeRequest;
@@ -43,6 +44,7 @@ class ChallengeController extends Controller
     ) {
         $user = $request->user();
         $now = CarbonImmutable::now();
+        $today = $now->setTimezone($challenge->timezone)->toDateString();
 
         $challenge->load('participants.user', 'tasks');
 
@@ -82,7 +84,9 @@ class ChallengeController extends Controller
                 ]
             ),
 
-            'tasks' => $challenge->tasks->map(fn ($task) => [
+            'tasks' => $challenge->tasks
+            ->filter(fn ($task) => TaskRules::isCurrent($task, $today))
+            ->map(fn ($task) => [
                 'id' => $task->id,
                 'name' => $task->name,
                 'description' => $task->description,
