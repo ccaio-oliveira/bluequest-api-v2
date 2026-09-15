@@ -163,6 +163,35 @@ class ChallengeController extends Controller
         return response()->noContent();
     }
 
+    public function end(Request $request, Challenge $challenge)
+    {
+        abort_unless($challenge->creator_user_id === $request->user()->id, 403);
+
+        $now = CarbonImmutable::now();
+
+        try {
+            ChallengeRules::validateEnd($challenge, $now);
+        } catch (ChallengeException $e) {
+            return response()->json(['error' => $e->reason], 422);
+        }
+
+        $challenge->update([
+            'ended_at' => $now,
+            'end_date' => $now->setTimezone($challenge->timezone)->toDateString(),
+        ]);
+
+        return response()->noContent();
+    }
+
+    public function destroy(Request $request, Challenge $challenge)
+    {
+        abort_unless($challenge->creator_user_id === $request->user()->id, 403);
+
+        $challenge->delete();
+
+        return response()->noContent();
+    }
+
     private function present(Challenge $challenge, RankingService $ranking, User $user, CarbonImmutable $now): array
     {
         $ranked = $ranking->rank($challenge);

@@ -25,6 +25,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/challenges', [ChallengeController::class, 'store']);
     Route::get('/challenges/{challenge}', [ChallengeController::class, 'show']);
     Route::put('/challenges/{challenge}', [ChallengeController::class, 'update']);
+    Route::delete('/challenges/{challenge}', [ChallengeController::class, 'destroy']);
+    Route::post('/challenges/{challenge}/end', [ChallengeController::class, 'end']);
     Route::post('/challenges/{challenge}/tasks', [TaskController::class, 'store']);
     Route::get('/challenges/{challenge}/invite', [InviteController::class, 'show']);
     Route::put('/challenges/{challenge}/invite', [InviteController::class, 'update']);

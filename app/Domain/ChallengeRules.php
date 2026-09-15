@@ -9,6 +9,10 @@ final class ChallengeRules
 {
     public static function state(Challenge $challenge, CarbonImmutable $now): ChallengeState
     {
+        if ($challenge->ended_at !== null && $now >= $challenge->ended_at) {
+            return ChallengeState::Closed;
+        }
+
         $start = self::midnight($challenge->start_date, $challenge->timezone);
         $dayAfterEnd = self::midnight($challenge->end_date, $challenge->timezone)->addDay();
 
@@ -81,6 +85,19 @@ final class ChallengeRules
 
         if (self::state($challenge, $now) === ChallengeState::Closed) {
             throw new ChallengeException('challenge_closed');
+        }
+    }
+
+    public static function validateEnd(Challenge $challenge, CarbonImmutable $now): void
+    {
+        $state = self::state($challenge, $now);
+
+        if ($state === ChallengeState::Closed) {
+            throw new ChallengeException('challenge_closed');
+        }
+
+        if ($state === ChallengeState::Future) {
+            throw new ChallengeException('challenge_not_started');
         }
     }
 

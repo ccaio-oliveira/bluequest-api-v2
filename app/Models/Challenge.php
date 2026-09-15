@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Challenge extends Model
 {
-    protected $fillable = ['creator_user_id', 'name', 'description', 'start_date', 'end_date', 'invite_enabled', 'timezone'];
+    protected $fillable = ['creator_user_id', 'name', 'description', 'start_date', 'end_date', 'ended_at', 'invite_enabled', 'timezone'];
 
     protected function casts(): array
     {
@@ -16,6 +16,7 @@ class Challenge extends Model
             'invite_enabled' => 'boolean',
             'start_date' => 'immutable_date',
             'end_date' => 'immutable_date',
+            'ended_at' => 'immutable_datetime',
         ];
     }
 

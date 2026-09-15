@@ -32,6 +32,12 @@ final class OccurrenceRules
             return OccurrenceState::Completed;
         }
 
+        $endedAt = $task->challenge->ended_at;
+
+        if ($endedAt !== null && $now >= $endedAt) {
+            return OccurrenceState::Expired;
+        }
+
         $startOfDay = CarbonImmutable::create(
             $date->year,
             $date->month,

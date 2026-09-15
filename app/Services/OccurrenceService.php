@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Domain\ChallengeRules;
+use App\Domain\ChallengeState;
 use App\Domain\Occurrence;
 use App\Domain\OccurrenceRules;
 use App\Domain\TaskRules;
@@ -55,6 +57,10 @@ final class OccurrenceService
         $occurrences = [];
 
         foreach ($participants as $participant) {
+            if (ChallengeRules::state($participant->challenge, $now) === ChallengeState::Closed) {
+                continue;
+            }
+
             $occurrences = [
                 ...$occurrences,
                 ...$this->forParticipantOnDate($participant, $date, $now),
