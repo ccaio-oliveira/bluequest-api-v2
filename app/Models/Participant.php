@@ -7,10 +7,15 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Participant extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = ['user_id', 'challenge_id', 'joined_at'];
+
+    const DELETED_AT = 'removed_at';
 
     protected function casts(): array
     {

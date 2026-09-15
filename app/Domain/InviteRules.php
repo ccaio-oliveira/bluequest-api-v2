@@ -10,8 +10,9 @@ final class InviteRules
         ?Invite $invite,
         ?ChallengeState $challengeState,
         bool $isAlreadyParticipant,
+        bool $wasRemoved,
     ): InviteState {
-        if ($invite === null || $invite->revoked_at !== null) {
+        if ($invite === null || $invite->revoked_at !== null || $wasRemoved) {
             return InviteState::Invalid;
         }
 

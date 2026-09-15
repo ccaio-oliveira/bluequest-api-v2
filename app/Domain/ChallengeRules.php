@@ -70,6 +70,20 @@ final class ChallengeRules
         }
     }
 
+    public static function validateParticipantRemoval(
+        Challenge $challenge,
+        int $userId,
+        CarbonImmutable $now,
+    ): void {
+        if ($userId === $challenge->creator_user_id) {
+            throw new ChallengeException('cannot_remove_creator');
+        }
+
+        if (self::state($challenge, $now) === ChallengeState::Closed) {
+            throw new ChallengeException('challenge_closed');
+        }
+    }
+
     private static function midnight(CarbonImmutable $date, string $timezone): CarbonImmutable
     {
         return CarbonImmutable::create(

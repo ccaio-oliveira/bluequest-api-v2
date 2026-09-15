@@ -24,7 +24,7 @@ final class CompletionRules
             throw new CompletionException('outside_challenge_period');
         }
 
-        if (!$task->recurrence()->occursOn($occurrenceDate)) {
+        if (!TaskRules::isActiveOn($task, $occurrenceDate) || !$task->recurrence()->occursOn($occurrenceDate)) {
             throw new CompletionException('occurrence_does_not_exist');
         }
 

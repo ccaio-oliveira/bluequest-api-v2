@@ -52,8 +52,14 @@ class InviteController extends Controller
         ->exists();
 
         $challengeState = $challenge !== null ? ChallengeRules::state($challenge, CarbonImmutable::now()) : null;
+        $membership = $this->membership($challenge, $request->user()->id);
 
-        $state = InviteRules::state($invite, $challengeState, $isParticipant);
+        $state = InviteRules::state(
+            $invite,
+            $challengeState,
+            $membership !== null && !$membership->trashed(),
+            $membership?->trashed() ?? false,
+        );
 
         return response()->json([
             'state' => $state->value,
@@ -73,8 +79,14 @@ class InviteController extends Controller
         ->exists();
 
         $challengeState = $challenge !== null ? ChallengeRules::state($challenge, CarbonImmutable::now()) : null;
+        $membership = $this->membership($challenge, $request->user()->id);
 
-        $state = InviteRules::state($invite, $challengeState, $isParticipant);
+        $state = InviteRules::state(
+            $invite,
+            $challengeState,
+            $membership !== null && !$membership->trashed(),
+            $membership?->trashed() ?? false,
+        );
 
         if ($state !== InviteState::Valid) {
             return response()->json([
@@ -172,5 +184,17 @@ class InviteController extends Controller
         }
 
         return (int) max($perWeekday);
+    }
+
+    private function membership(?Challenge $challenge, int $userId): ?Participant
+    {
+        if ($challenge === null) {
+            return null;
+        }
+
+        return Participant::withTrashed()
+        ->where('challenge_id', $challenge->id)
+        ->where('user_id', $userId)
+        ->first();
     }
 }

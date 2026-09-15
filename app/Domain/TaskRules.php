@@ -15,7 +15,7 @@ final class TaskRules
             return false;
         }
 
-        if ($task->active_until !== null && $day < $task->active_until->toDateString()) {
+        if ($task->active_until !== null && $day > $task->active_until->toDateString()) {
             return false;
         }
 
