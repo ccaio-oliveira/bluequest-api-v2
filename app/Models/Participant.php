@@ -13,7 +13,7 @@ class Participant extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['user_id', 'challenge_id', 'joined_at'];
+    protected $fillable = ['user_id', 'challenge_id', 'invite_id', 'joined_at'];
 
     const DELETED_AT = 'removed_at';
 

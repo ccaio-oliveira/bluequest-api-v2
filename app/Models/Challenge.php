@@ -8,11 +8,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Challenge extends Model
 {
-    protected $fillable = ['creator_user_id', 'name', 'description', 'start_date', 'end_date', 'timezone'];
+    protected $fillable = ['creator_user_id', 'name', 'description', 'start_date', 'end_date', 'invite_enabled', 'timezone'];
 
     protected function casts(): array
     {
         return [
+            'invite_enabled' => 'boolean',
             'start_date' => 'immutable_date',
             'end_date' => 'immutable_date',
         ];

@@ -23,33 +23,25 @@ class InviteController extends Controller
     {
         $this->ensureParticipant($request, $challenge);
 
-        $invite = $challenge->invites()->whereNull('revoked_at')->latest('id')->first() ?? $this->createInvite($challenge, $request->user()->id);
-
-        return response()->json($this->linkPayload($invite));
+        return response()->json($this->invitePayload($challenge, $request->user()->id));
     }
 
     public function rotate(Request $request, Challenge $challenge)
     {
         abort_unless($challenge->creator_user_id === $request->user()->id, 403);
 
-        $invite = DB::transaction(function () use ($challenge, $request) {
+        DB::transaction(function () use ($challenge, $request) {
             $challenge->invites()->whereNull('revoked_at')->update(['revoked_at' => CarbonImmutable::now()]);
-
-            return $this->createInvite($challenge, $request->user()->id);
+            $this->createInvite($challenge, $request->user()->id);
         });
 
-        return response()->json($this->linkPayload($invite), 201);
+        return response()->json($this->invitePayload($challenge, $request->user()->id), 201);
     }
 
     public function preview(Request $request, string $code)
     {
         $invite = Invite::with(['challenge.participants.user', 'challenge.tasks', 'createdBy'])->where('code', $code)->first();
         $challenge = $invite?->challenge;
-
-        $isParticipant = $challenge != null && Participant::query()
-        ->where('challenge_id', $challenge->id)
-        ->where('user_id', $request->user()->id)
-        ->exists();
 
         $challengeState = $challenge !== null ? ChallengeRules::state($challenge, CarbonImmutable::now()) : null;
         $membership = $this->membership($challenge, $request->user()->id);
@@ -73,11 +65,6 @@ class InviteController extends Controller
         $challenge = $invite?->challenge;
         $user = $request->user();
 
-        $isParticipant = $challenge != null && Participant::query()
-        ->where('challenge_id', $challenge->id)
-        ->where('user_id', $user->id)
-        ->exists();
-
         $challengeState = $challenge !== null ? ChallengeRules::state($challenge, CarbonImmutable::now()) : null;
         $membership = $this->membership($challenge, $request->user()->id);
 
@@ -95,22 +82,29 @@ class InviteController extends Controller
             ], 422);
         }
 
-        DB::transaction(function () use ($challenge, $user, $invite) {
-            Participant::create([
-                'user_id' => $user->id,
-                'challenge_id' => $challenge->id,
-                'joined_at' => CarbonImmutable::now()
-            ]);
-
-            if ($invite->used_at === null) {
-                $invite->update([
-                    'used_by_user_id' => $user->id,
-                    'used_at' => CarbonImmutable::now()
-                ]);
-            }
-        });
+        Participant::create([
+            'user_id' => $user->id,
+            'challenge_id' => $challenge->id,
+            'invite_id' => $invite->id,
+            'joined_at' => CarbonImmutable::now()
+        ]);
 
         return response()->json(['challenge_id' => $challenge->id], 201);
+    }
+
+    public function update(Request $request, Challenge $challenge)
+    {
+        abort_unless($challenge->creator_user_id === $request->user()->id, 403);
+
+        $data = $request->validate(['enabled' => ['required', 'boolean']]);
+
+        if (ChallengeRules::state($challenge, CarbonImmutable::now()) === ChallengeState::Closed) {
+            return response()->json(['error' => 'challenge_closed'], 422);
+        }
+
+        $challenge->update(['invite_enabled' => $data['enabled']]);
+
+        return response()->noContent();
     }
 
     private function ensureParticipant(Request $request, Challenge $challenge): void
@@ -196,5 +190,24 @@ class InviteController extends Controller
         ->where('challenge_id', $challenge->id)
         ->where('user_id', $userId)
         ->first();
+    }
+
+    private function invitePayload(Challenge $challenge, int $userId): array
+    {
+        $isCreator = $challenge->creator_user_id === $userId;
+        $invite = $challenge->invites()->whereNull('revoked_at')->latest('id')->first();
+
+        if ($invite === null && $challenge->invite_enabled) {
+            $invite = $this->createInvite($challenge, $userId);
+        }
+
+        $showsLink = $invite !== null && ($challenge->invite_enabled || $isCreator);
+
+        return [
+            'enabled' => $challenge->invite_enabled,
+            'code' => $showsLink ? $invite->code : null,
+            'link' => $showsLink ? 'bluequest://invite/' . $invite->code : null,
+            'uses' => $invite?->participants()->withTrashed()->count() ?? 0,
+        ];
     }
 }
