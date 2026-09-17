@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ChallengeController;
 use App\Http\Controllers\Api\CompletionController;
+use App\Http\Controllers\Api\HistoryController;
 use App\Http\Controllers\Api\InviteController;
 use App\Http\Controllers\Api\ParticipantController;
 use App\Http\Controllers\Api\SocialAuthController;
@@ -36,4 +37,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/tasks/{task}', [TaskController::class, 'destroy']);
     Route::get('/invites/{code}', [InviteController::class, 'preview']);
     Route::post('/invites/{code}/accept', [InviteController::class, 'accept']);
+
+    Route::get('/history', [HistoryController::class, 'index']);
 });

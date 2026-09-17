@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Domain\OccurrenceState;
+use App\Domain\StreakRules;
 use App\Models\Participant;
 use Carbon\CarbonImmutable;
 
@@ -50,36 +51,8 @@ final class ParticipantStatsService
             'completed_count' => $completed,
             'expired_count' => $expired,
             'total_occurrences' => count($occurrences),
-            'streak_days' => $this->streak($byDate, $today),
+            'streak_days' => StreakRules::current($byDate, $today),
         ];
-    }
-
-    private function streak(array $byDate, CarbonImmutable $today): int
-    {
-        $dates = array_keys($byDate);
-        rsort($dates);
-
-        $streak = 0;
-
-        foreach ($dates as $date) {
-            $dayOccurrences = collect($byDate[$date]);
-
-            if ($dayOccurrences->every(fn ($o) => $o->state === OccurrenceState::Completed)) {
-                $streak++;
-                continue;
-            }
-
-            $isToday = $date === $today->toDateString();
-            $stillOpen = $dayOccurrences->contains(fn ($o) => $o->state === OccurrenceState::Available);
-
-            if ($isToday && $stillOpen) {
-                continue;
-            }
-
-            break;
-        }
-
-        return $streak;
     }
 
     private function midnight(CarbonImmutable $date, string $timezone): CarbonImmutable
