@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ChallengeController;
 use App\Http\Controllers\Api\CompletionController;
+use App\Http\Controllers\Api\FeedController;
 use App\Http\Controllers\Api\HistoryController;
 use App\Http\Controllers\Api\InviteController;
 use App\Http\Controllers\Api\ParticipantController;
@@ -30,6 +31,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/challenges/{challenge}', [ChallengeController::class, 'destroy']);
     Route::post('/challenges/{challenge}/end', [ChallengeController::class, 'end']);
     Route::post('/challenges/{challenge}/tasks', [TaskController::class, 'store']);
+    Route::get('/challenges/{challenge}/feed', [FeedController::class, 'index']);
     Route::get('/challenges/{challenge}/invite', [InviteController::class, 'show']);
     Route::put('/challenges/{challenge}/invite', [InviteController::class, 'update']);
     Route::post('/challenges/{challenge}/invite/rotate', [InviteController::class, 'rotate']);
