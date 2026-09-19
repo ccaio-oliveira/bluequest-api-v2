@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\ParticipantController;
 use App\Http\Controllers\Api\SocialAuthController;
 use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\TodayController;
+use App\Http\Controllers\Api\UploadController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -37,6 +38,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/tasks/{task}', [TaskController::class, 'destroy']);
     Route::get('/invites/{code}', [InviteController::class, 'preview']);
     Route::post('/invites/{code}/accept', [InviteController::class, 'accept']);
+    Route::post('/uploads/completion-photo', [UploadController::class, 'completionPhoto']);
 
     Route::get('/history', [HistoryController::class, 'index']);
 });
