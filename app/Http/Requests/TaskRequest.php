@@ -26,7 +26,7 @@ class TaskRequest extends FormRequest
             'recurrence_weekdays.*' => ['integer', 'between:1,7'],
             'recurrence_date' => ['required_if:recurrence_type,once', 'nullable', 'date_format:Y-m-d'],
             'deadline_time' => ['required', 'date_format:H:i'],
-            'photo_requirement' => ['required', Rule::in(['none', 'optional', 'required'])],
+            'photo_requirement' => ['required', Rule::in(['none', 'required'])],
         ];
     }
 }

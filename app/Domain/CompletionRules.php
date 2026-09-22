@@ -13,6 +13,7 @@ final class CompletionRules
         bool $isParticipant,
         bool $isAlreadyCompleted,
         CarbonImmutable $now,
+        bool $hasPhoto,
     ): void {
         if (!$isParticipant) {
             throw new CompletionException('user_not_participant');
@@ -32,6 +33,10 @@ final class CompletionRules
 
         if ($state !== OccurrenceState::Available) {
             throw new CompletionException('occurrence_not_available', $state);
+        }
+
+        if ($task->photo_requirement === 'required' && !$hasPhoto) {
+            throw new CompletionException('photo_required');
         }
     }
 }

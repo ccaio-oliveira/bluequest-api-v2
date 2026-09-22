@@ -17,11 +17,10 @@ class TodayController extends Controller
         ]);
 
         $now = CarbonImmutable::now();
-        $date = $request->filled('date') ? CarbonImmutable::parse($request->string('date')) : $now;
+        $date = $request->filled('date') ? CarbonImmutable::parse($request->string('date')) : null;
         $occurrences = $service->forUserOnDate($request->user(), $date, $now);
 
         return response()->json([
-            'date' => $date->toDateString(),
             'occurrences' => array_map(fn ($occurrence) => [
                 'task_id' => $occurrence->task->id,
                 'challenge_id' => $occurrence->task->challenge_id,

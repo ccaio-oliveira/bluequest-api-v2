@@ -41,6 +41,7 @@ class CompletionController extends Controller
                 isParticipant: $participant !== null,
                 isAlreadyCompleted: $alreadyCompleted,
                 now: CarbonImmutable::now(),
+                hasPhoto: !empty($data['photo_url']),
             );
         } catch (CompletionException $e) {
             return response()->json([

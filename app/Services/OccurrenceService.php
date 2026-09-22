@@ -48,7 +48,7 @@ final class OccurrenceService
     }
 
     /** @return Occurrence[] */
-    public function forUserOnDate(User $user, CarbonImmutable $date, CarbonImmutable $now): array
+    public function forUserOnDate(User $user, ?CarbonImmutable $date, CarbonImmutable $now): array
     {
         $participants = $user->participations()
         ->with(['challenge.tasks'])
@@ -57,13 +57,17 @@ final class OccurrenceService
         $occurrences = [];
 
         foreach ($participants as $participant) {
-            if (ChallengeRules::state($participant->challenge, $now) === ChallengeState::Closed) {
+            $challenge = $participant->challenge;
+
+            if (ChallengeRules::state($challenge, $now) === ChallengeState::Closed) {
                 continue;
             }
 
+            $day = $date ?? CarbonImmutable::parse($now->setTimezone($challenge->timezone)->toDateString());
+
             $occurrences = [
                 ...$occurrences,
-                ...$this->forParticipantOnDate($participant, $date, $now),
+                ...$this->forParticipantOnDate($participant, $day, $now),
             ];
         }
 

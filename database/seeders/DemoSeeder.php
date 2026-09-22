@@ -54,7 +54,7 @@ class DemoSeeder extends Seeder
             'challenge_id' => $challenge->id, 'name' => 'Fazer treino',
             'points' => 5, 'recurrence_type' => 'weekdays',
             'recurrence_weekdays' => [2, 3, 5, 6],
-            'deadline_time' => '22:00', 'photo_requirement' => 'optional',
+            'deadline_time' => '22:00', 'photo_requirement' => 'required',
         ]);
 
         Task::create([
