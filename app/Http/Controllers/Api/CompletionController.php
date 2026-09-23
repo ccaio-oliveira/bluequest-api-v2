@@ -18,7 +18,7 @@ class CompletionController extends Controller
         $data = $request->validate([
             'task_id' => ['required', 'integer', 'exists:tasks,id'],
             'occurrence_date' => ['required', 'date_format:Y-m-d'],
-            'photo_url' => ['nullable', 'url', 'max:2048'],
+            'photo_path' => ['nullable', 'string', 'max:2048', 'starts_with:completions/', 'not_regex:/\.\./'],
         ]);
 
         $task = Task::with('challenge')->findOrFail($data['task_id']);
@@ -41,7 +41,7 @@ class CompletionController extends Controller
                 isParticipant: $participant !== null,
                 isAlreadyCompleted: $alreadyCompleted,
                 now: CarbonImmutable::now(),
-                hasPhoto: !empty($data['photo_url']),
+                hasPhoto: !empty($data['photo_path']),
             );
         } catch (CompletionException $e) {
             return response()->json([
@@ -56,7 +56,7 @@ class CompletionController extends Controller
             'occurrence_date' => $occurrenceDate,
             'completed_at' => CarbonImmutable::now(),
             'points_awarded' => $task->points,
-            'photo_url' => $data['photo_url'] ?? null,
+            'photo_path' => $data['photo_path'] ?? null,
         ]);
 
         return response()->json([

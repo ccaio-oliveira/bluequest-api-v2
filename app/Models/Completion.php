@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Completion extends Model
 {
-    protected $fillable = ['participant_id', 'task_id', 'occurrence_date', 'completed_at', 'points_awarded', 'photo_url'];
+    protected $fillable = ['participant_id', 'task_id', 'occurrence_date', 'completed_at', 'points_awarded', 'photo_path'];
 
     protected function casts(): array
     {

@@ -71,14 +71,14 @@ class HistoryController extends Controller
             'completed' => count($completed),
             'expired' => count($expired),
             'points' => array_sum(array_map(fn ($o) => $o->completion?->points_awarded ?? 0, $occurrences)),
-            'has_photo' => count(array_filter($occurrences, fn ($o) => $o->completion?->photo_url !== null)) > 0,
+            'has_photo' => count(array_filter($occurrences, fn ($o) => $o->completion?->photo_path !== null)) > 0,
             'tasks' => array_map(fn ($o) => [
                 'name' => $o->task->name,
                 'challenge_name' => $o->task->challenge->name,
                 'points' => $o->task->points,
                 'state' => $o->state->value,
                 'deadline_time' => substr($o->task->deadline_time, 0, 5),
-                'has_photo' => $o->completion?->photo_url !== null,
+                'has_photo' => $o->completion?->photo_path !== null,
             ], array_values($occurrences)),
         ];
     }

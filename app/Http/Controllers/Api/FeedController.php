@@ -49,7 +49,7 @@ class FeedController extends Controller
                 'points' => $completion->points_awarded,
                 'occurrence_date' => $completion->occurrence_date->toDateString(),
                 'completed_at' => $completion->completed_at->toIso8601String(),
-                'photo_url' => $completion->photo_url,
+                'photo_url' => $completion->photo_path === null ? null : $request->getSchemeAndHttpHost() . '/storage/' . $completion->photo_path,
             ])->values(),
             'next_before' => $hasMore ? $rows->last()->id : null
         ]);
