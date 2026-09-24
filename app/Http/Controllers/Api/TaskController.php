@@ -29,7 +29,7 @@ class TaskController extends Controller
 
         $task = $challenge->tasks()->create([
             ...$this->attributes($request->validated()),
-            'active_from' => $state === ChallengeState::Future ? null : CarbonImmutable::parse($today)->addDay()->toDateString(),
+            'active_from' => TaskRules::activeFrom($state, $today),
         ]);
 
         return response()->json(['id' => $task->id], 201);
@@ -54,12 +54,12 @@ class TaskController extends Controller
             return response()->noContent();
         }
 
-        DB::transaction(function () use ($task, $challenge, $attributes, $today) {
+        DB::transaction(function () use ($task, $challenge, $attributes, $state, $today) {
             $task->update(['active_until' => $today]);
 
             $challenge->tasks()->create([
                 ...$attributes,
-                'active_from' => CarbonImmutable::parse($today)->addDay()->toDateString(),
+                'active_from' => TaskRules::activeFrom($state, $today),
             ]);
         });
 
@@ -100,7 +100,7 @@ class TaskController extends Controller
             'points' => $data['points'],
             'recurrence_type' => $type,
             'recurrence_weekdays' => $type === RecurrenceType::Weekdays ? array_values(array_unique($data['recurrence_weekdays'])) : null,
-            'recurrence_date' => $type === RecurrenceType::Once ? $data['recurrence_date'] : null,
+            'recurrence_dates' => $type === RecurrenceType::Dates ? TaskRules::sortedDates($data['recurrence_dates']) : null,
             'deadline_time' => $data['deadline_time'],
             'photo_requirement' => $data['photo_requirement'],
         ];

@@ -156,7 +156,7 @@ class InviteController extends Controller
             ->map(fn ($participant) => ['name' => $participant->user->name])
             ->values(),
             'invited_by' => $invite->createdBy?->name,
-            'tasks_count' => $challenge->tasks->count(),
+            'tasks_count' => $challenge->tasks->filter(fn ($task) => TaskRules::isCurrent($task, $today))->count(),
             'max_points_per_day' => $this->maxPointsPerDay($challenge, $today),
         ];
     }
@@ -172,7 +172,7 @@ class InviteController extends Controller
             ->filter(fn ($task) => match ($task->recurrence_type) {
                 RecurrenceType::Daily => true,
                 RecurrenceType::Weekdays => in_array($weekday, $task->recurrence_weekdays ?? [], true),
-                RecurrenceType::Once => false,
+                RecurrenceType::Dates => false,
             })
             ->sum('points');
         }

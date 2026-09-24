@@ -38,4 +38,21 @@ final class TaskRules
 
         return $task->active_from === null || $task->active_from->toDateString() <= $today;
     }
+
+    public static function activeFrom(ChallengeState $state, string $today): ?string
+    {
+        return $state === ChallengeState::Future ? null : CarbonImmutable::parse($today)->addDay()->toDateString();
+    }
+
+    /**
+     * @param string[] $dates
+     * @return string[]
+     */
+    public static function sortedDates(array $dates): array
+    {
+        $dates = array_unique($dates);
+        sort($dates);
+
+        return array_values($dates);
+    }
 }

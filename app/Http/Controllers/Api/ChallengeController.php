@@ -95,6 +95,7 @@ class ChallengeController extends Controller
                 'photo_requirement' => $task->photo_requirement,
                 'recurrence_type' => $task->recurrence_type->value,
                 'recurrence_weekdays' => $task->recurrence_weekdays,
+                'recurrence_dates' => $task->recurrence_dates,
             ])->values(),
         ]);
     }
@@ -129,7 +130,7 @@ class ChallengeController extends Controller
                     'points' => $task['points'],
                     'recurrence_type' => $type,
                     'recurrence_weekdays' => $type === RecurrenceType::Weekdays ? array_values(array_unique($task['recurrence_weekdays'])) : null,
-                    'recurrence_date' => $type === RecurrenceType::Once ? $task['recurrence_date'] : null,
+                    'recurrence_dates' => $type === RecurrenceType::Dates ? TaskRules::sortedDates($task['recurrence_dates']) : null,
                     'deadline_time' => $task['deadline_time'],
                     'photo_requirement' => $task['photo_requirement'],
                 ]);

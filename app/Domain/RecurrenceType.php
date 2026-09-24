@@ -4,7 +4,7 @@ namespace App\Domain;
 
 enum RecurrenceType: string
 {
-    case Once = 'once';
+    case Dates = 'dates';
     case Daily = 'daily';
     case Weekdays = 'weekdays';
 }

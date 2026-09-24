@@ -23,9 +23,10 @@ class StoreChallengeRequest extends FormRequest
             'tasks.*.recurrence_type' => ['required', Rule::enum(RecurrenceType::class)],
             'tasks.*.recurrence_weekdays' => ['required_if:tasks.*.recurrence_type,weekdays', 'nullable', 'array', 'min:1'],
             'tasks.*.recurrence_weekdays.*' => ['integer', 'between:1,7'],
-            'tasks.*.recurrence_date' => ['required_if:tasks.*.recurrence_type,once', 'nullable', 'date_format:Y-m-d', 'after_or_equal:start_date', 'before_or_equal:end_date'],
+            'tasks.*.recurrence_dates' => ['required_if:tasks.*.recurrence_type,dates', 'nullable', 'array', 'min:1', 'max:60'],
+            'tasks.*.recurrence_dates.*' => ['date_format:Y-m-d', 'after_or_equal:start_date', 'before_or_equal:end_date'],
             'tasks.*.deadline_time' => ['required', 'date_format:H:i'],
-            'tasks.*.photo_requirement' => ['required', Rule::in(['none', 'optional', 'required'])],
+            'tasks.*.photo_requirement' => ['required', Rule::in(['none', 'required'])],
         ];
     }
 }
