@@ -10,12 +10,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Completion;
 use App\Models\Participant;
 use App\Models\Task;
+use App\Services\RankingNotifier;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 
 class CompletionController extends Controller
 {
-    public function store(Request $request)
+    public function store(Request $request, RankingNotifier $ranking)
     {
         $data = $request->validate([
             'task_id' => ['required', 'integer', 'exists:tasks,id'],
@@ -65,6 +66,8 @@ class CompletionController extends Controller
             ], 422);
         }
 
+        $before = $ranking->snapshot($task->challenge);
+
         $completion = Completion::create([
             'participant_id' => $participant->id,
             'task_id' => $task->id,
@@ -73,6 +76,8 @@ class CompletionController extends Controller
             'points_awarded' => $task->points,
             'photo_path' => $data['photo_path'] ?? null,
         ]);
+
+        $ranking->notifyOvertaken($participant, $before, $task->points);
 
         return response()->json([
             'id' => $completion->id,

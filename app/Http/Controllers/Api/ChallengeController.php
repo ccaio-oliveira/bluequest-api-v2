@@ -13,6 +13,7 @@ use App\Models\Challenge;
 use App\Models\Participant;
 use App\Models\Task;
 use App\Models\User;
+use App\Services\ChallengeResultsNotifier;
 use App\Services\ParticipantStatsService;
 use App\Services\RankingService;
 use Carbon\CarbonImmutable;
@@ -162,7 +163,7 @@ class ChallengeController extends Controller
         return response()->noContent();
     }
 
-    public function end(Request $request, Challenge $challenge)
+    public function end(Request $request, Challenge $challenge, ChallengeResultsNotifier $results)
     {
         abort_unless($challenge->creator_user_id === $request->user()->id, 403);
 
@@ -178,6 +179,8 @@ class ChallengeController extends Controller
             'ended_at' => $now,
             'end_date' => $now->setTimezone($challenge->timezone)->toDateString(),
         ]);
+
+        $results->notify($challenge);
 
         return response()->noContent();
     }

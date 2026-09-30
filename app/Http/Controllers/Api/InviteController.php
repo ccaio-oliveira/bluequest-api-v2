@@ -12,8 +12,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Challenge;
 use App\Models\Invite;
 use App\Models\Participant;
+use App\Notifications\ParticipantJoined;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -88,6 +90,14 @@ class InviteController extends Controller
             'invite_id' => $invite->id,
             'joined_at' => CarbonImmutable::now()
         ]);
+
+        $others = $challenge->participants()
+        ->with('user')
+        ->where('user_id', '!=', $user->id)
+        ->get()
+        ->pluck('user');
+
+        Notification::send($others, new ParticipantJoined($challenge, $user, $others->count() + 1));
 
         return response()->json(['challenge_id' => $challenge->id], 201);
     }
