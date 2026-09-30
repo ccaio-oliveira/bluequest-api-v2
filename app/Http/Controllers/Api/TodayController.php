@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Domain\OccurrenceRules;
+use App\Domain\OccurrenceState;
 use App\Http\Controllers\Controller;
 use App\Services\OccurrenceService;
 use Carbon\CarbonImmutable;
@@ -33,6 +34,12 @@ class TodayController extends Controller
                 'occurrence_date' => $occurrence->date->toDateString(),
                 'state' => $occurrence->state->value,
                 'points_awarded' => $occurrence->completion?->points_awarded,
+                'weekly' => $occurrence->weekly === null ? null : [
+                    'target' => $occurrence->weekly->target,
+                    'done' => $occurrence->weekly->done,
+                    'days_left' => $occurrence->weekly->daysLeft($occurrence->date->toDateString()),
+                    'is_mandatory' => $occurrence->state === OccurrenceState::Available && $occurrence->weekly->isMandatory($occurrence->date->toDateString()),
+                ]
             ], $occurrences),
         ]);
     }

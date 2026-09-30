@@ -34,6 +34,7 @@ class TaskRequest extends FormRequest
                 'after_or_equal:' . $this->firstPossibleDate($challenge),
                 'before_or_equal:' . $challenge->end_date->toDateString(),
             ],
+            'recurrence_times_per_week' => ['required_if:recurrence_type,weekly', 'nullable', 'integer', 'between:1,6'],
             'deadline_time' => ['required', 'date_format:H:i'],
             'photo_requirement' => ['required', Rule::in(['none', 'required'])],
         ];

@@ -7,4 +7,5 @@ enum RecurrenceType: string
     case Dates = 'dates';
     case Daily = 'daily';
     case Weekdays = 'weekdays';
+    case Weekly = 'weekly';
 }

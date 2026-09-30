@@ -11,6 +11,7 @@ use App\Http\Requests\StoreChallengeRequest;
 use App\Http\Requests\UpdateChallengeRequest;
 use App\Models\Challenge;
 use App\Models\Participant;
+use App\Models\Task;
 use App\Models\User;
 use App\Services\ParticipantStatsService;
 use App\Services\RankingService;
@@ -96,6 +97,7 @@ class ChallengeController extends Controller
                 'recurrence_type' => $task->recurrence_type->value,
                 'recurrence_weekdays' => $task->recurrence_weekdays,
                 'recurrence_dates' => $task->recurrence_dates,
+                'recurrence_times_per_week' => $task->recurrence_times_per_week,
             ])->values(),
         ]);
     }
@@ -122,15 +124,11 @@ class ChallengeController extends Controller
             ]);
 
             foreach ($data['tasks'] ?? [] as $task) {
-                $type = RecurrenceType::from($task['recurrence_type']);
-
                 $challenge->tasks()->create([
                     'name' => $task['name'],
                     'description' => $task['description'] ?? null,
                     'points' => $task['points'],
-                    'recurrence_type' => $type,
-                    'recurrence_weekdays' => $type === RecurrenceType::Weekdays ? array_values(array_unique($task['recurrence_weekdays'])) : null,
-                    'recurrence_dates' => $type === RecurrenceType::Dates ? TaskRules::sortedDates($task['recurrence_dates']) : null,
+                    ...Task::recurrenceAttributes($task),
                     'deadline_time' => $task['deadline_time'],
                     'photo_requirement' => $task['photo_requirement'],
                 ]);

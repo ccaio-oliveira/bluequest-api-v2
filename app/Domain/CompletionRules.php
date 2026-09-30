@@ -14,6 +14,7 @@ final class CompletionRules
         bool $isAlreadyCompleted,
         CarbonImmutable $now,
         bool $hasPhoto,
+        ?WeeklyGoal $weekly = null
     ): void {
         if (!$isParticipant) {
             throw new CompletionException('user_not_participant');
@@ -33,6 +34,10 @@ final class CompletionRules
 
         if ($state !== OccurrenceState::Available) {
             throw new CompletionException('occurrence_not_available', $state);
+        }
+
+        if ($weekly?->isMet()) {
+            throw new CompletionException('weekly_target_reached');
         }
 
         if ($task->photo_requirement === 'required' && !$hasPhoto) {

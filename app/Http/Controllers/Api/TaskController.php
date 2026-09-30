@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Domain\ChallengeRules;
 use App\Domain\ChallengeState;
-use App\Domain\RecurrenceType;
 use App\Domain\TaskRules;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\TaskRequest;
@@ -12,7 +11,7 @@ use App\Models\Challenge;
 use App\Models\Task;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Request;
+use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
@@ -92,15 +91,11 @@ class TaskController extends Controller
 
     private function attributes(array $data): array
     {
-        $type = RecurrenceType::from($data['recurrence_type']);
-
         return [
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
             'points' => $data['points'],
-            'recurrence_type' => $type,
-            'recurrence_weekdays' => $type === RecurrenceType::Weekdays ? array_values(array_unique($data['recurrence_weekdays'])) : null,
-            'recurrence_dates' => $type === RecurrenceType::Dates ? TaskRules::sortedDates($data['recurrence_dates']) : null,
+            ...Task::recurrenceAttributes($data),
             'deadline_time' => $data['deadline_time'],
             'photo_requirement' => $data['photo_requirement'],
         ];

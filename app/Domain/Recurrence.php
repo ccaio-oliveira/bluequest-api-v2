@@ -14,6 +14,7 @@ final class Recurrence
         public readonly RecurrenceType $type,
         public readonly array $dates = [],
         public readonly array $weekdays = [],
+        public readonly int $timesPerWeek = 0,
     )
     {}
 
@@ -21,7 +22,7 @@ final class Recurrence
     {
         return match ($this->type) {
             RecurrenceType::Dates => in_array($date->toDateString(), $this->dates, true),
-            RecurrenceType::Daily => true,
+            RecurrenceType::Daily, RecurrenceType::Weekly => true,
             RecurrenceType::Weekdays => in_array($date->dayOfWeek + 1, $this->weekdays, true),
         };
     }

@@ -13,6 +13,7 @@ final class Occurrence
         public readonly CarbonImmutable $date,
         public readonly OccurrenceState $state,
         public readonly ?Completion $completion,
+        public readonly ?WeeklyGoal $weekly = null,
     )
     {}
 }

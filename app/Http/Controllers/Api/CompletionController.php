@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Domain\CompletionException;
 use App\Domain\CompletionRules;
+use App\Domain\RecurrenceType;
+use App\Domain\WeeklyGoal;
 use App\Http\Controllers\Controller;
 use App\Models\Completion;
 use App\Models\Participant;
@@ -34,6 +36,18 @@ class CompletionController extends Controller
         ->whereDate('occurrence_date', $occurrenceDate)
         ->exists();
 
+        $weekly = null;
+
+        if ($participant !== null && $task->recurrence_type === RecurrenceType::Weekly) {
+            $completedDays = $participant->completions()
+            ->where('task_id', $task->id)
+            ->get()
+            ->map(fn ($completion) => $completion->occurrence_date->toDateString())
+            ->all();
+
+            $weekly = WeeklyGoal::for($task, $occurrenceDate, $completedDays);
+        }
+
         try {
             CompletionRules::validate(
                 task: $task,
@@ -42,6 +56,7 @@ class CompletionController extends Controller
                 isAlreadyCompleted: $alreadyCompleted,
                 now: CarbonImmutable::now(),
                 hasPhoto: !empty($data['photo_path']),
+                weekly: $weekly,
             );
         } catch (CompletionException $e) {
             return response()->json([

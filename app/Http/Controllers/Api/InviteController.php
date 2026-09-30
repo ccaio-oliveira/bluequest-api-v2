@@ -173,6 +173,7 @@ class InviteController extends Controller
                 RecurrenceType::Daily => true,
                 RecurrenceType::Weekdays => in_array($weekday, $task->recurrence_weekdays ?? [], true),
                 RecurrenceType::Dates => false,
+                RecurrenceType::Weekly => true,
             })
             ->sum('points');
         }
