@@ -48,12 +48,17 @@ final class ReminderService
                 continue;
             }
 
-            $occurrences = $this->occurrences->forParticipantInRange(
-                $participant,
-                CarbonImmutable::parse($from),
-                CarbonImmutable::parse($to),
-                $now
-            );
+            $weeklyGoals = $this->weeklyGoals($participant, $today, $to);
+
+            $occurrences = [
+                ...$this->occurrences->forParticipantInRange(
+                    $participant,
+                    CarbonImmutable::parse($from),
+                    CarbonImmutable::parse($to),
+                    $now
+                ),
+                ...$this->projectedWeekly($weeklyGoals, $today, $to)
+            ];
 
             foreach ($occurrences as $occurrence) {
                 if (!$this->isPending($occurrence)) {
@@ -70,7 +75,7 @@ final class ReminderService
             }
 
             if ($wants['weekly_mandatory']) {
-                array_push($reminders, ...$this->weeklyReminders($participant, $today, $to));
+                array_push($reminders, ...$this->weeklyAlerts($weeklyGoals, $today));
             }
         }
 
@@ -116,12 +121,11 @@ final class ReminderService
         ];
     }
 
-    private function weeklyReminders(Participant $participant, string $today, string $to): array
+    private function weeklyGoals(Participant $participant, string $today, string $to): array
     {
-        $challenge = $participant->challenge;
-        $reminders = [];
+        $goals = [];
 
-        $tasks = $challenge->tasks->filter(
+        $tasks = $participant->challenge->tasks->filter(
             fn (Task $task) => $task->recurrence_type === RecurrenceType::Weekly && TaskRules::isCurrent($task, $today)
         );
 
@@ -135,32 +139,62 @@ final class ReminderService
             foreach ([$today, $to] as $day) {
                 $goal = WeeklyGoal::for($task, CarbonImmutable::parse($day), $completedDays);
 
-                if ($goal->start > $goal->end || $goal->isMet()) {
-                    continue;
+                if ($goal->start <= $goal->end && !$goal->isMet()) {
+                    $goals["{$task->id}:{$goal->start}"] = ['task' => $task, 'goal' => $goal];
                 }
-
-                $alertDay = max(
-                    $goal->start,
-                    CarbonImmutable::parse($goal->end)->subDays($goal->remaining() - 1)->toDateString(),
-                );
-
-                if ($alertDay < $today) {
-                    continue;
-                }
-
-                $days = $goal->daysLeft($alertDay);
-                $id = "weekly:{$task->id}:{$goal->start}";
-
-                $reminders[$id] = [
-                    'id' => $id,
-                    'kind' => 'weekly_mandatory',
-                    'fire_at' => CarbonImmutable::parse("$alertDay " . self::WEEKLY_TIME, $challenge->timezone),
-                    'title' => "{$task->name} virou obrigatória",
-                    'body' => "Faltam {$goal->remaining()} em " . ($days === 1 ? '1 dia' : "$days dias") . " · {$challenge->name}",
-                ];
             }
         }
 
-        return array_values($reminders);
+        return array_values($goals);
+    }
+
+    private function projectedWeekly(array $weeklyGoals, string $today, string $to): array
+    {
+        $occurrences = [];
+        $tomorrow = CarbonImmutable::parse($today)->addDay()->toDateString();
+
+        foreach ($weeklyGoals as ['task' => $task, 'goal' => $goal]) {
+            $day = CarbonImmutable::parse(max($goal->start, $tomorrow));
+            $last = min($goal->end, $to);
+
+            while ($day->toDateString() <= $last) {
+                if ($goal->isMandatory($day->toDateString())) {
+                    $occurrences[] = new Occurrence($task, $day, OccurrenceState::Future, null, $goal);
+                }
+
+                $day = $day->addDay();
+            }
+        }
+
+        return $occurrences;
+    }
+
+    private function weeklyAlerts(array $weeklyGoals, string $today): array
+    {
+        $reminders = [];
+
+        foreach ($weeklyGoals as ['task' => $task, 'goal' => $goal]) {
+            $alertDay = max(
+                $goal->start,
+                CarbonImmutable::parse($goal->end)->subDays($goal->remaining() - 1)->toDateString()
+            );
+
+            if ($alertDay < $today) {
+                continue;
+            }
+
+            $days = $goal->daysLeft($alertDay);
+            $challenge = $task->challenge;
+
+            $reminders[] = [
+                'id' => "weekly:{$task->id}:{$goal->start}",
+                'kind' => 'weekly_mandatory',
+                'fire_at' => CarbonImmutable::parse("$alertDay " . self::WEEKLY_TIME, $challenge->timezone),
+                'title' => "{$task->name} virou obrigatória",
+                'body' => "Faltam {$goal->remaining()} em " . ($days === 1 ? '1 dia' : "$days dias") . " · {$challenge->name}",
+            ];
+        }
+
+        return $reminders;
     }
 }
