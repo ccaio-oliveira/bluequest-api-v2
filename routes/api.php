@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\HistoryController;
 use App\Http\Controllers\Api\InviteController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ParticipantController;
+use App\Http\Controllers\Api\ReminderController;
 use App\Http\Controllers\Api\SocialAuthController;
 use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\TodayController;
@@ -50,4 +51,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/notifications/read', [NotificationController::class, 'markAllRead']);
     Route::get('/notification-preferences', [NotificationController::class, 'preferences']);
     Route::put('/notification-preferences', [NotificationController::class, 'updatePreferences']);
+
+    Route::get('/reminders', [ReminderController::class, 'index']);
 });
