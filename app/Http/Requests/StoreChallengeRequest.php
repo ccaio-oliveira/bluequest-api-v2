@@ -30,4 +30,19 @@ class StoreChallengeRequest extends FormRequest
             'tasks.*.photo_requirement' => ['required', Rule::in(['none', 'required'])],
         ];
     }
+
+    public function attributes(): array
+    {
+        return [
+            'start_date' => 'início',
+            'end_date' => 'término',
+            'tasks.*.name' => 'nome da tarefa',
+            'tasks.*.points' => 'pontos',
+            'tasks.*.recurrence_weekdays' => 'dias da semana',
+            'tasks.*.recurrence_dates' => 'datas',
+            'tasks.*.recurrence_dates.*' => 'data',
+            'tasks.*.recurrence_times_per_week' => 'vezes por semana',
+            'tasks.*.deadline_time' => 'prazo',
+        ];
+    }
 }

@@ -40,6 +40,19 @@ class TaskRequest extends FormRequest
         ];
     }
 
+    public function attributes(): array
+    {
+        return [
+            'points' => 'pontos',
+            'recurrence_weekdays' => 'dias da semana',
+            'recurrence_dates' => 'datas',
+            'recurrence_dates.*' => 'data',
+            'recurrence_times_per_week' => 'vezes por semana',
+            'deadline_time' => 'prazo',
+            'photo_requirement' => 'foto',
+        ];
+    }
+
     private function challenge(): Challenge
     {
         return $this->route('challenge') ?? $this->route('task')->challenge;
