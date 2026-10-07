@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\HistoryController;
 use App\Http\Controllers\Api\InviteController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ParticipantController;
+use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ReminderController;
 use App\Http\Controllers\Api\SocialAuthController;
 use App\Http\Controllers\Api\TaskController;
@@ -22,6 +23,7 @@ Route::post('/auth/{provider}', [SocialAuthController::class, 'store']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
+    Route::get('/me/stats', [ProfileController::class, 'stats']);
 
     Route::get('/today', [TodayController::class, 'index']);
     Route::post('/completions', [CompletionController::class, 'store']);
