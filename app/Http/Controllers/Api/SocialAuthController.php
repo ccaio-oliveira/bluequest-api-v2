@@ -60,12 +60,7 @@ class SocialAuthController extends Controller
         });
 
         return response()->json([
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'avatar_url' => $user->avatar_url,
-            ],
+            'user' => $user->profilePayload(),
             'token' => $user->createToken('mobile')->plainTextToken,
         ]);
     }

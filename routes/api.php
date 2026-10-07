@@ -23,6 +23,8 @@ Route::post('/auth/{provider}', [SocialAuthController::class, 'store']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
+    Route::put('/me', [ProfileController::class, 'update']);
+    Route::put('/me/password', [ProfileController::class, 'updatePassword']);
     Route::get('/me/stats', [ProfileController::class, 'stats']);
 
     Route::get('/today', [TodayController::class, 'index']);

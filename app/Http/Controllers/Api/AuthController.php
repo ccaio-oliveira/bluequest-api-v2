@@ -25,7 +25,7 @@ class AuthController extends Controller
         ]);
 
         return response()->json([
-            'user' => $this->userPayload($user),
+            'user' => $user->profilePayload(),
             'token' => $user->createToken('mobile')->plainTextToken,
         ], 201);
     }
@@ -46,7 +46,7 @@ class AuthController extends Controller
         }
 
         return response()->json([
-            'user' => $this->userPayload($user),
+            'user' => $user->profilePayload(),
             'token' => $user->createToken('mobile')->plainTextToken,
         ]);
     }
@@ -60,16 +60,6 @@ class AuthController extends Controller
 
     public function me(Request $request)
     {
-        return response()->json($this->userPayload($request->user()));
-    }
-
-    private function userPayload(User $user): array
-    {
-        return [
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'avatar_url' => $user->avatar_url,
-        ];
+        return response()->json($request->user()->profilePayload());
     }
 }

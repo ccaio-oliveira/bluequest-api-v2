@@ -54,4 +54,15 @@ class User extends Authenticatable
     {
         return $this->notificationPreferences()[$kind];
     }
+
+    public function profilePayload(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'email' => $this->email,
+            'avatar_url' => $this->avatar_url,
+            'has_password' => $this->password !== null,
+        ];
+    }
 }
