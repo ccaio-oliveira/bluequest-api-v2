@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\HistoryController;
 use App\Http\Controllers\Api\InviteController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ParticipantController;
+use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ReminderController;
 use App\Http\Controllers\Api\SocialAuthController;
@@ -19,6 +20,8 @@ use Illuminate\Support\Facades\Route;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/auth/{provider}', [SocialAuthController::class, 'store']);
+Route::post('/password/forgot', [PasswordResetController::class, 'forgot'])->middleware('throttle:password-forgot');
+Route::post('/password/reset', [PasswordResetController::class, 'reset'])->middleware('throttle:password-reset');
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
